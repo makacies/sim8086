@@ -15,9 +15,10 @@ fn disasm_listings() {
         println!("\n\nTesting {}", name);
 
         let input_machine_code = fs::read(dir_entry.path()).unwrap();
-        let asm = sim8086::disassemble(&input_machine_code);
+        let disassemble = sim8086::mov::disassemble(&input_machine_code);
+        let asm = disassemble;
 
-        let path = current_dir().unwrap().join("tests/output").join(&name);
+        let path: std::path::PathBuf = current_dir().unwrap().join("tests/output").join(&name);
         let mut f = File::create(path.with_extension("asm")).unwrap();
         f.write_all(asm.as_bytes()).unwrap();
 
@@ -33,13 +34,6 @@ fn disasm_listings() {
 
         let output_machine_code = fs::read(&path).unwrap();
 
-        // for (i, (input, output)) in input_machine_code
-        //     .iter()
-        //     .zip(output_machine_code)
-        //     .enumerate()
-        // {
-        //     assert_eq!(*input, output, "byte {i}");
-        // }
         assert_eq!(input_machine_code, output_machine_code);
     }
 }

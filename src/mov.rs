@@ -1,6 +1,6 @@
-use std::{collections::HashMap, env, fs};
+use std::collections::HashMap;
 
-pub fn disassemble() -> Vec<String> {
+pub fn disassemble(input_machine_code: &Vec<u8>) -> String {
     const OPCODE_MASK: u8 = 0b11111100;
     const D_MASK: u8 = 0b00000010;
     const W_MASK: u8 = 0b00000001;
@@ -32,21 +32,16 @@ pub fn disassemble() -> Vec<String> {
         (0b00111000, "DI"),
     ]);
 
-    // let path = env::current_dir().unwrap().join("src/listings/listing_0037_single_register_mov");
-    let path = env::current_dir().unwrap().join("src/listings/listing_0038_many_register_mov");
-
-    let stream = fs::read(path).unwrap();
-
     let mut i = 0;
-    let len = stream.len();
-    let mut instructions: Vec<String> = Vec::new();
+    let len = input_machine_code.len();
+    let mut instructions: String = "bits 16".to_string();
 
     while i < len {
-        let opcode = stream[i] & OPCODE_MASK;
+        let opcode = input_machine_code[i] & OPCODE_MASK;
         let opcode = *opcode_map.get(&opcode).unwrap();
         
-        let d = stream[i] & D_MASK;
-        let w = stream[i] & W_MASK;
+        let d = input_machine_code[i] & D_MASK;
+        let w = input_machine_code[i] & W_MASK;
 
         let reg_map = if w == 0 {
             &reg_w0_map
@@ -54,10 +49,10 @@ pub fn disassemble() -> Vec<String> {
             &reg_w1_map
         };
 
-        let reg = stream[i + 1] & REG_MASK;
+        let reg = input_machine_code[i + 1] & REG_MASK;
         let reg_w0 = reg_map.get(&reg).unwrap();
 
-        let r_m = stream[i + 1] & R_M_MASK;
+        let r_m = input_machine_code[i + 1] & R_M_MASK;
         let r_m = r_m << 3;
         let r_m_w0 = reg_map.get(&r_m).unwrap();
 
@@ -67,7 +62,7 @@ pub fn disassemble() -> Vec<String> {
             (reg_w0, r_m_w0)
         };
 
-        instructions.push(format!("{opcode} {destination}, {source}"));
+        instructions = format!("{instructions}\n{opcode} {destination}, {source}");
         i = i + 2;
     };
 
